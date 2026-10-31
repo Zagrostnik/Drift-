@@ -1247,6 +1247,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LapTimeManager
   timePerLap: 30
+  score: 0
+  scoreText: {fileID: 0}
+  popupText: {fileID: 0}
   timerText: {fileID: 1736376225}
   gameOverPanel: {fileID: 487541451}
   carController: {fileID: 2139806616}
@@ -2470,6 +2473,8 @@ MonoBehaviour:
   lapBonus: 1000
   collisionPenalty: 500
   driftScoreInterval: 0.25
+  scoreText: {fileID: 223345704}
+  popupText: {fileID: 1101000394}
 --- !u!114 &748778190
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3233,7 +3238,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1101000393
 RectTransform:
   m_ObjectHideFlags: 0
