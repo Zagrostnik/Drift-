@@ -11,6 +11,6 @@ public class VehicleInput : MonoBehaviour
     {
         Steering = Input.GetAxis("Horizontal");
         Throttle = Input.GetAxis("Vertical");
-        IsHandbraking = Input.GetKey(KeyCode.Space);
+        IsHandbraking = Input.GetAxis("Jump")==1;
     }
 }
