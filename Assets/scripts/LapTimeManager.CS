@@ -1,16 +1,20 @@
-using UnityEngine;
-using TMPro;
-using UnityEngine.SceneManagement; // Для TextMeshPro using UnityEngine.SceneManagement;
-public class LapTimeManager : MonoBehaviour { [Header("Настройки времени")] [Tooltip("Время в секундах, дающееся на прохождение одного круга/участка")] public float timePerLap = 30f; private float currentTimeLeft; private bool isRacing = false;
+using UnityEngine; using TMPro; using UnityEngine.SceneManagement; using System.Collections; // Нужно для корутин (плавной анимации)
+public class LapTimeManager : MonoBehaviour { [Header("Настройки времени")] public float timePerLap = 30f; private float currentTimeLeft; private bool isRacing = false;
+[Header("Очки и Текст")]
+public int score = 0;                  
+public TMP_Text scoreText;             
+public TMP_Text popupText;             // Ссылка на всплывающий текст (+5)
+
 [Header("Интерфейс (UI)")]
-public TMP_Text timerText;          // Текст для отображения таймера
-public GameObject gameOverPanel;    // Панель поражения (опционально)
+public TMP_Text timerText;          
+public GameObject gameOverPanel;    
 
 [Header("Ссылки")]
-public MonoBehaviour carController; // Скрипт управления машиной (чтобы отключить при проигрыше)
+public MonoBehaviour carController; 
 
 void Start()
 {
+    if (popupText != null) popupText.gameObject.SetActive(false);
     StartNewAttempt();
 }
 
@@ -18,13 +22,9 @@ void Update()
 {
     if (!isRacing) return;
 
-    // Уменьшаем таймер каждый кадр
     currentTimeLeft -= Time.deltaTime;
-
-    // Обновляем текст на экране
     UpdateTimerUI();
 
-    // Проверяем, истекло ли время
     if (currentTimeLeft <= 0f)
     {
         currentTimeLeft = 0f;
@@ -32,10 +32,10 @@ void Update()
     }
 }
 
-// Метод для запуска/перезапуска гонки
 public void StartNewAttempt()
 {
     currentTimeLeft = timePerLap;
+    score = 0; 
     isRacing = true;
 
     if (gameOverPanel != null) 
@@ -43,19 +43,62 @@ public void StartNewAttempt()
 
     if (carController != null) 
         carController.enabled = true;
+        
+    UpdateScoreUI();
 }
 
-// ЭТОТ МЕТОД НУЖНО ВЫЗВАТЬ, КОГДА МАШИНА ПЕРЕСЕКАЕТ ЛИНИЮ ФИНИША (ЧЕКПОИНТ)
 public void PassFinishLine()
 {
     if (!isRacing) return;
 
-    Debug.Log("Круг пройден вовремя! Время сброшено.");
-
-    // Сбрасываем таймер заново для следующего круга
     currentTimeLeft = timePerLap; 
+    AddScore(100, "КРУГ ПРОЙДЕН! +100"); 
+}
+
+// Метод для начисления очков с выводом всплывающего текста
+public void AddScore(int amount, string customMessage = "")
+{
+    if (!isRacing) return;
+    score += amount;
+    UpdateScoreUI();
+
+    // Показываем всплывающий текст
+    if (popupText != null)
+    {
+        StopAllCoroutines(); // Останавливаем прошлую анимацию, если она еще идет
+        StartCoroutine(ShowPopupAnimation(customMessage != "" ? customMessage : "+" + amount));
+    }
+}
+
+IEnumerator ShowPopupAnimation(string message)
+{
+    popupText.text = message;
+    popupText.gameObject.SetActive(true);
     
-    // Здесь можно добавить подсчет очков или номер текущего круга, если нужно
+    Color textColor = popupText.color;
+    textColor.a = 1f; // Делаем текст полностью видимым
+    popupText.color = textColor;
+
+    float duration = 0.8f; // Время, сколько текст виден/анимируется
+    float elapsed = 0f;
+
+    Vector3 initialScale = Vector3.one * 0.5f;
+    Vector3 targetScale = Vector3.one * 1.2f;
+
+    while (elapsed < duration)
+    {
+        elapsed += Time.deltaTime;
+        float t = elapsed / duration;
+
+        // Плавное увеличение и увядание
+        popupText.transform.localScale = Vector3.Lerp(initialScale, targetScale, t);
+        textColor.a = Mathf.Lerp(1f, 0f, t);
+        popupText.color = textColor;
+
+        yield return null;
+    }
+
+    popupText.gameObject.SetActive(false); // Скрываем текст после анимации
 }
 
 void UpdateTimerUI()
@@ -68,24 +111,24 @@ void UpdateTimerUI()
     }
 }
 
+void UpdateScoreUI()
+{
+    if (scoreText != null)
+    {
+        scoreText.text = "Очки: " + score;
+    }
+}
+
 void GameOver()
 {
     isRacing = false;
-    Debug.Log("Время вышло! Вы проиграли.");
-
-    // Показываем панель поражения
-    if (gameOverPanel != null) 
-        gameOverPanel.SetActive(true);
-
-    // Отключаем управление машиной
-    if (carController != null) 
-        carController.enabled = false;
+    if (popupText != null) popupText.gameObject.SetActive(false);
+    if (gameOverPanel != null) gameOverPanel.SetActive(true);
+    if (carController != null) carController.enabled = false;
 }
 
-// Метод для кнопки "Попробовать снова" в UI
 public void RestartGame()
 {
-    // Перезагружает текущую сцену (самый простой способ рестарта)
     SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 }
 }
