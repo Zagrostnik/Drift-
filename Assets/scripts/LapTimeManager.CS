@@ -1,4 +1,6 @@
-using UnityEngine; using TMPro; // Для TextMeshPro using UnityEngine.SceneManagement;
+using UnityEngine;
+using TMPro;
+using UnityEngine.SceneManagement; // Для TextMeshPro using UnityEngine.SceneManagement;
 public class LapTimeManager : MonoBehaviour { [Header("Настройки времени")] [Tooltip("Время в секундах, дающееся на прохождение одного круга/участка")] public float timePerLap = 30f; private float currentTimeLeft; private bool isRacing = false;
 [Header("Интерфейс (UI)")]
 public TMP_Text timerText;          // Текст для отображения таймера
